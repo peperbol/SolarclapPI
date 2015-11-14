@@ -5,8 +5,7 @@ import math
 class Ticker:
     def __init__(self, bpm):
         self.startTime =  time.time()
-        self.timeBetween = 60/bpm
-
+        self.timeBetween = float(60)/bpm
     #makes sure to have the right timing
     def Ticks(self, delayOffset):
         currentTime = 0
@@ -14,7 +13,8 @@ class Ticker:
 
         while True:
             currentTime = time.time() - startTime
+            print(self.timeBetween)
             nextTick = max(math.ceil(currentTime/ self.timeBetween),1)
             nextTime = nextTick * self.timeBetween
             time.sleep(nextTime - currentTime)
-            yield nextTick
+            yield int(nextTick)

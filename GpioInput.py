@@ -10,13 +10,12 @@ def GpioInputHandler( level, hands):
     GPIO.setmode(GPIO.BCM)
     GPIO.cleanup()
     GPIO.setwarnings(False)
-
     inputs = []
     for i in range(len(hands)):
         for j in range(i+1,len(hands )):
             inputs.append(InputPair(level,hands[i], hands[j]))
 
-    def checkInput(check:Hand.Hand, other):
+    def checkInput(check, other):
         for o in other:
             GPIO.setup(o.pin,GPIO.IN)
         GPIO.setup(check.pin,GPIO.OUT)

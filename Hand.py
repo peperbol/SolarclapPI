@@ -8,7 +8,7 @@ class Hand:
         self.pin = pin
 
 class HandPair:
-    def __init__(self, hand1: Hand, hand2: Hand):
+    def __init__(self, hand1, hand2):
         self.hands = [hand1,hand2]
         self.clapped = False
 

@@ -7,6 +7,7 @@ import GpioInput
 import math
 import Hand
 import Tick
+import NeoPixelDisplay
 
 
 class SongLevel:
@@ -30,6 +31,8 @@ class SongLevel:
         t = threading.Thread(target=GpioInput.GpioInputHandler, args=[self, hands])
         t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
 
+        display = NeoPixelDisplay.NeoPixelDisplay(hands,tickSequence)
+
         lastT = 0
         self.currentTick = tickSequence[0];
         self.playing = True
@@ -39,26 +42,29 @@ class SongLevel:
                 break
 
             DeltaT = t- lastT;
-
             self.currentTick.end()
-            print("---")
             self.currentTick = tickSequence[t];
 
-            for h in hands:
-                text = h.name + ":"
-                while len(text) < 10:
-                    text += " "
-                text+= "|"
-                for i in range(t, min(t+8, len( tickSequence))):
-                    if tickSequence[i].getOther(h):
-                        text += tickSequence[i].getOther(h).color;
-                    else:
-                        text += "."
-                print(text)
+            display.display(t)
+            self.DebugLog(hands, tickSequence, t)
 
             lastT = t;
 
         self.playing = False
+
+    def DebugLog(self, hands, tickSequence, t):
+        print("---")
+        for h in hands:
+            text = h.name + ":"
+            while len(text) < 10:
+                text += " "
+            text+= "|"
+            for i in range(t, min(t+8, len( tickSequence))):
+                if tickSequence[i].getOther(h):
+                    text += tickSequence[i].getOther(h).name[0];
+                else:
+                    text += "."
+            print(text)
 
     def makeTickSequence(self, hands):
         file = open(self.sequence, 'r')
@@ -68,7 +74,7 @@ class SongLevel:
             if "#" in l:
                 break
             pairs = []
-            for i in range(math.floor(len(l)/2)):
+            for i in range(int(math.floor((len(l)-2)/2))):
                 pairs.append( Hand.HandPair(hands[min( int(l[i*2]),int(l[i*2+1]) )],hands[max( int(l[i*2]),int(l[i*2+1]) )]))
             seq.append(Tick.Tick(pairs) )
         return  seq
