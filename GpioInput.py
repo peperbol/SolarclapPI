@@ -47,5 +47,5 @@ class InputPair:
             return
         self.pressed = pressed
         if pressed:
-            #print(self.hands[0].name + " touched " +self.hands[1].name)
+            print(self.hands[0].name + " touched " +self.hands[1].name)
             self.level.currentTick.clap(self.hands[0], self.hands[1])

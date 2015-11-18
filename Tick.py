@@ -25,6 +25,16 @@ class Tick:
             if(p.getOther(hand)):
                 return p.getOther(hand)
         return False
+
     def end(self):
         for p in self.pairs:
             p.end()
+
+    def hasPairs(self):
+        return len(self.pairs) > 0
+
+    def isSucceeded(self):
+        result = True
+        for p in self.pairs:
+            result &= p.clapped
+        return result

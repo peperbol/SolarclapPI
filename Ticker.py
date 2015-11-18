@@ -13,7 +13,7 @@ class Ticker:
 
         while True:
             currentTime = time.time() - startTime
-            print(self.timeBetween)
+            #print(self.timeBetween)
             nextTick = max(math.ceil(currentTime/ self.timeBetween),1)
             nextTime = nextTick * self.timeBetween
             time.sleep(nextTime - currentTime)

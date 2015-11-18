@@ -13,7 +13,7 @@ import NeoPixelDisplay
 class SongLevel:
     def __init__(self, song, bpm):
         self.song = "Sound/" + song + ".wav"
-        self.sequence = "Sequence/test_" + song + ".txt"
+        self.sequence = "Sequence/" + song + ".txt"
         self.bpm = bpm
         self.playing = False
 
@@ -56,7 +56,7 @@ class SongLevel:
         print("---")
         for h in hands:
             text = h.name + ":"
-            while len(text) < 10:
+            while len(text) < 15:
                 text += " "
             text+= "|"
             for i in range(t, min(t+8, len( tickSequence))):
