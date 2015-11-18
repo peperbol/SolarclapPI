@@ -8,7 +8,8 @@ import math
 import Hand
 import Tick
 import NeoPixelDisplay
-
+import Score
+import time
 
 class SongLevel:
     def __init__(self, song, bpm):
@@ -27,6 +28,7 @@ class SongLevel:
         ticker = Ticker.Ticker(self.bpm)
 
         tickSequence = self.makeTickSequence(hands)
+        score = Score.Score(self.countBeats(tickSequence))
 
         t = threading.Thread(target=GpioInput.GpioInputHandler, args=[self, hands])
         t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
@@ -34,23 +36,24 @@ class SongLevel:
         display = NeoPixelDisplay.NeoPixelDisplay(hands,tickSequence)
 
         lastT = 0
-        self.currentTick = tickSequence[0];
+        self.currentTick = tickSequence[0]
         self.playing = True
         t.start()
         for t in ticker.Ticks(0):
             if t >= len(tickSequence) :
                 break
 
-            DeltaT = t- lastT;
-            self.currentTick.end()
-            self.currentTick = tickSequence[t];
+            DeltaT = t- lastT
+            self.currentTick.end(score)
+            self.currentTick = tickSequence[t]
 
-            display.display(t)
+            display.display(t,score)
             self.DebugLog(hands, tickSequence, t)
 
-            lastT = t;
+            lastT = t
 
         self.playing = False
+        time.sleep(1)
 
     def DebugLog(self, hands, tickSequence, t):
         print("---")
@@ -61,14 +64,21 @@ class SongLevel:
             text+= "|"
             for i in range(t, min(t+8, len( tickSequence))):
                 if tickSequence[i].getOther(h):
-                    text += tickSequence[i].getOther(h).name[0];
+                    text += tickSequence[i].getOther(h).name[0]
                 else:
                     text += "."
             print(text)
 
+    def countBeats(self, tickSequence):
+        counter = 0
+        for tick in tickSequence:
+            if tick.hasPairs():
+                counter += 1
+        return counter
+
     def makeTickSequence(self, hands):
         file = open(self.sequence, 'r')
-        lines = file.readlines();
+        lines = file.readlines()
         seq = []
         for l in lines:
             if "#" in l:

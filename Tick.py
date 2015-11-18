@@ -26,9 +26,14 @@ class Tick:
                 return p.getOther(hand)
         return False
 
-    def end(self):
+    def end(self, score):
         for p in self.pairs:
             p.end()
+        if self.hasPairs():
+            if self.isSucceeded():
+                score.addGood()
+            else:
+                score.addWrong()
 
     def hasPairs(self):
         return len(self.pairs) > 0
