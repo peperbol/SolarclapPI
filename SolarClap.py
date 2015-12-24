@@ -2,7 +2,12 @@ __author__ = 'Pepijn W'
 
 import SongLevel
 import Hand
-from neopixel import Color
+import threading
+import GpioInput
+import pygame
+import SongSelectMenu
+from NeoPixelDisplay import Color
+import ExitGame
 
 hands = [
     #Hand.Hand(Color(168,255 ,0)        ,"lime"           ,17),
@@ -14,5 +19,14 @@ hands = [
     #Hand.Hand(Color(128,0,255)         ,"violet"         ,4),
     Hand.Hand(Color(255,0,168)         ,"barbie pink"    ,7)
 ]
-song = SongLevel.SongLevel("Vivacity", 140)
-song.play(hands)
+
+tr = threading.Thread(target=GpioInput.GpioButtonInputHandler, args=[8, 11])
+tr.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
+
+menu = SongSelectMenu.SongSelectMenu(
+    [
+        SongLevel.SongLevel("Vivacity", 140, hands),
+        ExitGame.ExitGame("Exit")
+    ],
+    tr
+)

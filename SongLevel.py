@@ -10,37 +10,45 @@ import Tick
 import NeoPixelDisplay
 import Score
 import time
+import SongSelectMenu
 
 class SongLevel:
-    def __init__(self, song, bpm):
+    def __init__(self, song, bpm, hands):
         self.song = "Sound/" + song + ".wav"
         self.sequence = "Sequence/" + song + ".txt"
+        self.spokenname = "menu/" + song + ".wav"
         self.bpm = bpm
         self.playing = False
+        self.hands = hands
 
 
-    def play(self, hands):
-        pygame.mixer.init()
+    def play(self):
         pygame.mixer.music.load(self.song)
         pygame.mixer.music.set_volume(1.0)
         pygame.mixer.music.play()
 
         ticker = Ticker.Ticker(self.bpm)
 
-        tickSequence = self.makeTickSequence(hands)
+        tickSequence = self.makeTickSequence(self.hands)
         score = Score.Score(self.countBeats(tickSequence))
 
-        t = threading.Thread(target=GpioInput.GpioInputHandler, args=[self, hands])
-        t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
+        tr = threading.Thread(target=GpioInput.GpioHandInputHandler, args=[self, self.hands])
+        tr.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
 
-        display = NeoPixelDisplay.NeoPixelDisplay(hands,tickSequence)
+        def stop(b1,b2):
+            if b1 and b2:
+                self.playing = False
+
+        GpioInput.buttoncallback = GpioInput.ButtonCallback(stop, stop)
+
+        display = NeoPixelDisplay.NeoPixelDisplay(self.hands,tickSequence)
 
         lastT = 0
         self.currentTick = tickSequence[0]
         self.playing = True
-        t.start()
+        tr.start()
         for t in ticker.Ticks(0):
-            if t >= len(tickSequence) :
+            if not self.playing or t >= len(tickSequence) :
                 break
 
             DeltaT = t- lastT
@@ -48,12 +56,18 @@ class SongLevel:
             self.currentTick = tickSequence[t]
 
             display.display(t,score)
-            self.DebugLog(hands, tickSequence, t)
+            self.DebugLog(self.hands, tickSequence, t)
 
             lastT = t
 
+
+        pygame.mixer.music.stop()
+        t = len(tickSequence)
         self.playing = False
-        time.sleep(1)
+        time.sleep(2)
+        for frame in score.sort(3):
+            display.display(t,frame)
+        SongSelectMenu.ssm.activate()
 
     def DebugLog(self, hands, tickSequence, t):
         print("---")

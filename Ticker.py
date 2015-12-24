@@ -6,6 +6,7 @@ class Ticker:
     def __init__(self, bpm):
         self.startTime =  time.time()
         self.timeBetween = float(60)/bpm
+
     #makes sure to have the right timing
     def Ticks(self, delayOffset):
         currentTime = 0

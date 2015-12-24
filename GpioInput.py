@@ -2,14 +2,52 @@ __author__ = 'Pepijn W'
 
 
 import RPi.GPIO as GPIO
-import SongLevel
-import Hand
+import SongSelectMenu
+
+IsGpioSet = False
+
+def setGPIO():
+    global IsGpioSet
+    if not IsGpioSet:
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
+        IsGpioSet = True
 
 
-def GpioInputHandler( level, hands):
-    GPIO.setmode(GPIO.BCM)
-    GPIO.cleanup()
-    GPIO.setwarnings(False)
+def GpioButtonInputHandler(pin1, pin2):
+    global buttoncallback
+    setGPIO()
+
+    GPIO.setup(pin1, GPIO.IN)
+    GPIO.setup(pin2, GPIO.IN)
+
+    pin1Press = False;
+    pin2Press = False;
+    while SongSelectMenu.ssm.gameRunning:
+        if(GPIO.input(pin1)):
+            if not pin1Press:
+                pin1Press = True
+                buttoncallback.b1(pin1Press, pin2Press)
+        else:
+            pin1Press = False
+
+        if(GPIO.input(pin2)):
+            if not pin2Press:
+                pin2Press = True
+                buttoncallback.b2(pin1Press, pin2Press)
+        else:
+            pin2Press = False
+
+class ButtonCallback:
+    def __init__(self, b1, b2):
+        self.b1 = b1
+        self.b2 = b2
+
+buttoncallback = ButtonCallback(lambda : 0,lambda :0)
+
+def GpioHandInputHandler( level, hands):
+    setGPIO()
+
     inputs = []
     for i in range(len(hands)):
         for j in range(i+1,len(hands )):
@@ -47,5 +85,5 @@ class InputPair:
             return
         self.pressed = pressed
         if pressed:
-            print(self.hands[0].name + " touched " +self.hands[1].name)
+            #print(self.hands[0].name + " touched " +self.hands[1].name)
             self.level.currentTick.clap(self.hands[0], self.hands[1])
